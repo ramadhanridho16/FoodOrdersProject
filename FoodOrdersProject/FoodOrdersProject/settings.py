@@ -37,6 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'Master',
 ]
 
 MIDDLEWARE = [
@@ -76,6 +78,11 @@ WSGI_APPLICATION = 'FoodOrdersProject.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'dj_db_conn_pool.backends.postgresql',
+        'NAME': 'postgres',
+        'USER': 'postgres.ofztoztlgoeqvsuaryxf',
+        'PASSWORD': 'FoodOrderProject@123',
+        'HOST': 'aws-0-ap-southeast-1.pooler.supabase.com',
+        'PORT': '5432',
         'POOL_OPTIONS': {
             'POOL_SIZE': 50,
             'MAX_OVERFLOW': 10,
@@ -109,7 +116,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Jakarta'
 
 USE_I18N = True
 
@@ -125,3 +132,34 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "simple"
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "WARNING",
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console"],
+            "level": "INFO",
+        },
+        "dj_db_conn_pool.backends": {
+            "handlers": ["console"],
+            "level": "DEBUG",
+        }
+    },
+    "fromatters": {
+        "simple": {
+            "format": "{asctime} : {levelname} - {name} - {message}",
+            "style": "{"
+        },
+    },
+}
