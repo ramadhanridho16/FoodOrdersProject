@@ -144,7 +144,7 @@ LOGGING = {
     },
     "root": {
         "handlers": ["console"],
-        "level": "WARNING",
+        "level": "INFO",
     },
     "loggers": {
         "django": {
@@ -156,7 +156,7 @@ LOGGING = {
             "level": "DEBUG",
         }
     },
-    "fromatters": {
+    "formatters": {
         "simple": {
             "format": "{asctime} : {levelname} - {name} - {message}",
             "style": "{"
