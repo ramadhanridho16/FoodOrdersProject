@@ -145,15 +145,18 @@ LOGGING = {
     "root": {
         "handlers": ["console"],
         "level": "INFO",
+        'propagate': False,
     },
     "loggers": {
         "django": {
             "handlers": ["console"],
             "level": "INFO",
+            'propagate': False,
         },
-        "dj_db_conn_pool.backends": {
+        "django.db.backends": {
             "handlers": ["console"],
             "level": "DEBUG",
+            'propagate': False,
         }
     },
     "formatters": {
