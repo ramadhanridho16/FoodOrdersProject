@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view, renderer_classes
 from rest_framework.renderers import JSONRenderer
 from . import models
+from FoodOrdersProject import utils
 import logging
 
 # Create your views here.
@@ -14,5 +15,5 @@ def index(request, *args, **kwargs):
     if request.method == "GET":
         queryset = models.Categories.objects.all()
         logger.info("Test")
-        print(queryset)
-        return Response(data={"data": "Hello World"}, status=200, content_type="application/json")
+        logger.info(queryset)
+        return utils.generic_response(message="Oke", status_code=200)
