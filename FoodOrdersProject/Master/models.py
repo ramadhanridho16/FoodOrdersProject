@@ -52,3 +52,14 @@ class Promos(models.Model):
 
     class Meta:
         db_table = '"food_orders"."promos"'
+
+class HomeBanners(models.Model):
+    id = models.CharField(primary_key=True, max_length=100)
+    name = models.CharField(max_length=200, null=False)
+    media = models.OneToOneField(Medias, on_delete=models.RESTRICT, db_column='media_id', null=False)
+
+    def __str__(self) -> str:
+        return f'{self.id} => {self.name}'
+    
+    class Meta:
+        db_table = '"food_orders"."home_banners"'
