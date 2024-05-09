@@ -14,7 +14,7 @@ class Categories(models.Model):
 
 class Medias(models.Model):
     id = models.CharField(primary_key=True, max_length=100)
-    name = models.CharField(null=False, max_length=200)
+    name = models.CharField(null=False, max_length=100, unique=True)
     type = models.CharField(null=False, max_length=100)
     size = models.IntegerField(null=False)
 
@@ -34,7 +34,7 @@ class PaymentMethod(models.Model):
         SHOPEE = 'SHP', 'Shopee'
 
     id = models.CharField(primary_key=True, max_length=100)
-    name = models.CharField(null=False, max_length=200)
+    name = models.CharField(null=False, max_length=100)
     prefix_code = models.CharField(
         default='', max_length=3, null=False, choices=PrefixChoices.choices)
 
@@ -60,8 +60,8 @@ class Promos(models.Model):
 
 class HomeBanners(models.Model):
     id = models.CharField(primary_key=True, max_length=100)
-    name = models.CharField(max_length=200, null=False)
-    media = models.OneToOneField(
+    name = models.CharField(max_length=100, null=False, unique=True)
+    media_id = models.OneToOneField(
         Medias, on_delete=models.RESTRICT, db_column='media_id', null=False)
 
     def __str__(self) -> str:
