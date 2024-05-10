@@ -1,7 +1,8 @@
+from FoodOrdersProject.utils import generic_response, uuidv4
 from rest_framework.decorators import api_view
-from django.http import JsonResponse
 from asgiref.sync import sync_to_async
-from FoodOrdersProject import utils
+from django.http import JsonResponse
+from .models import Categories
 from .serializer import Test
 import logging
 import asyncio
@@ -10,6 +11,7 @@ import time
 # Create your views here.
 
 logger = logging.getLogger(__name__)
+uuid = uuidv4
 
 @api_view(["GET"])
 def index(request, *args, **kwargs):
@@ -19,14 +21,17 @@ def index(request, *args, **kwargs):
         data = {
             "name": ""
         }
-        #For latter, not all raw query is print out to the logger, so it is need to print out to logger manually, after doing something with model, dont forget do query and logging it in INFO level
         test = Test(data=data)
         logger.info(test.is_valid(raise_exception=True))
-        return utils.generic_response(message="Oke", status_code=200, data=test.data)
+        return generic_response(message="Oke", status_code=200, data=test.data)
     
 
 async def test_async(request, name):
     if request.method == "GET":
+        category = Categories()
+        category.id = uuid()
+        category.name = "Drinks"
+        await category.asave()
         asyncio.create_task(testing_sleep(name))
         return JsonResponse(status=201, data={"Message":name})
     
@@ -34,5 +39,5 @@ async def test_async(request, name):
 @sync_to_async(thread_sensitive=False)
 def testing_sleep(name):
     logger.info(name)
-    time.sleep(2)
+    time.sleep(10)
     logger.info(name)
