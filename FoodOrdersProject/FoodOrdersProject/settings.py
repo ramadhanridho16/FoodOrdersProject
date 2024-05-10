@@ -155,15 +155,10 @@ LOGGING = {
             "level": "INFO",
             'propagate': False,
         },
-        "django.db.backends": {
-            "handlers": ["console"],
-            "level": "DEBUG",
-            'propagate': False,
-        }
     },
     "formatters": {
         "simple": {
-            "format": "{asctime} : {levelname} - {name} - {message}",
+            "format": "{asctime} : {levelname} - {name}({lineno}) - {message}",
             "style": "{"
         },
     },

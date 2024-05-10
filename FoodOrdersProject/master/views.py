@@ -6,7 +6,6 @@ from .serializer import Test
 import logging
 import asyncio
 import time
-from subprocess import call
 
 # Create your views here.
 
@@ -20,15 +19,14 @@ def index(request, *args, **kwargs):
         data = {
             "name": ""
         }
-
+        #For latter, not all raw query is print out to the logger, so it is need to print out to logger manually, after doing something with model, dont forget do query and logging it in INFO level
         test = Test(data=data)
         logger.info(test.is_valid(raise_exception=True))
         return utils.generic_response(message="Oke", status_code=200, data=test.data)
     
 
-async def test_async(request, *args, **kwargs):
+async def test_async(request, name):
     if request.method == "GET":
-        name = kwargs['name']
         asyncio.create_task(testing_sleep(name))
         return JsonResponse(status=201, data={"Message":name})
     
