@@ -4,6 +4,7 @@ import time
 
 from asgiref.sync import sync_to_async
 from django.http import JsonResponse
+from django.conf import settings
 from rest_framework.decorators import api_view
 
 from FoodOrdersProject.utils import generic_response, uuidv4
@@ -35,6 +36,7 @@ async def test_async(request, name):
         category.id = uuid()
         category.name = "Drinks"
         await category.asave()
+        logger.info(settings.JWT_SECRET_KEY)
         asyncio.create_task(testing_sleep(name))
         return JsonResponse(status=201, data={"Message": name})
 
