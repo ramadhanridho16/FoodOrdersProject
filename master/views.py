@@ -3,10 +3,11 @@ import logging
 import time
 
 from asgiref.sync import sync_to_async
-from django.http import JsonResponse
 from django.conf import settings
+from django.http import JsonResponse
 from rest_framework.decorators import api_view
 
+from FoodOrdersProject.exception import ResponseStatusError
 from FoodOrdersProject.utils import generic_response, uuidv4
 from .models import Categories
 from .serializer import Test
@@ -28,6 +29,12 @@ def index(request, *args, **kwargs):
         test = Test(data=data)
         logger.info(test.is_valid(raise_exception=True))
         return generic_response(message="Oke", status_code=200, data=test.data)
+
+
+@api_view(["GET"])
+def test_exception(request):
+    raise ResponseStatusError("test", 400)
+    return generic_response(message="Test", status_code=200)
 
 
 async def test_async(request, name):
