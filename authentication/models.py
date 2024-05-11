@@ -1,5 +1,6 @@
 from django.db import models
 
+
 # Create your models here.
 class Users(models.Model):
     class PrefixChoices(models.TextChoices):
@@ -17,7 +18,7 @@ class Users(models.Model):
 
     def __str__(self) -> str:
         return f'{self.username}'
-    
+
     class Meta:
         db_table = '"food_orders"."users"'
 
@@ -26,11 +27,12 @@ class UserVerifies(models.Model):
     id = models.AutoField(primary_key=True, db_column='id')
     token = models.CharField(max_length=100, null=False, unique=True)
     expired_at = models.DateTimeField(null=False)
-    username = models.OneToOneField(Users, on_delete=models.RESTRICT, null=False, db_column='username')
+    username = models.OneToOneField(Users, on_delete=models.RESTRICT, null=False, db_column='username',
+                                    related_name='user_verifies')
 
     def __str__(self) -> str:
         return f'{self.id} => {self.username}'
-    
+
     class Meta:
         db_table = '"food_orders"."user_verifies"'
 
@@ -39,10 +41,11 @@ class ForgetPasswords(models.Model):
     id = models.AutoField(primary_key=True, db_column='id')
     token = models.CharField(max_length=100, null=False, unique=True)
     expired_at = models.DateTimeField(null=False)
-    username = models.OneToOneField(Users, on_delete=models.RESTRICT, null=False, db_column='username')
+    username = models.OneToOneField(Users, on_delete=models.RESTRICT, null=False, db_column='username',
+                                    related_name='forget_passwords')
 
     def __str__(self) -> str:
         return f'{self.id} => {self.username}'
-    
+
     class Meta:
         db_table = '"food_orders"."forget_passwords"'

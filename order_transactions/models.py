@@ -1,8 +1,9 @@
 from django.db import models
+
 from master.models import PaymentMethod, Categories, Medias, Promos
 
 
-class Couponts(models.Model):
+class Coupons(models.Model):
     code = models.CharField(max_length=100, primary_key=True, db_column='code')
     name = models.CharField(max_length=100)
     end_date = models.DateField()
@@ -19,21 +20,21 @@ class Couponts(models.Model):
         return f'{self.name}'
 
     class Meta:
-        db_table = '"food_orders"."couponts"'
+        db_table = '"food_orders"."coupons"'
 
 
 class Menus(models.Model):
     id = models.CharField(primary_key=True, max_length=100)
     name = models.CharField(max_length=255)
     category_id = models.ForeignKey(
-        Categories, on_delete=models.RESTRICT, related_name='master')
+        Categories, on_delete=models.RESTRICT, related_name='menus')
     price = models.FloatField()
     promo_price = models.FloatField()
     promo = models.BooleanField()
     promo_id = models.ForeignKey(
-        Promos, on_delete=models.RESTRICT, related_name='master')
+        Promos, on_delete=models.RESTRICT, related_name='menus')
     media_id = models.ForeignKey(
-        Medias, on_delete=models.RESTRICT, related_name='master')
+        Medias, on_delete=models.RESTRICT, related_name='menus')
 
     def __str__(self) -> str:
         return f'{self.name}'
@@ -48,11 +49,11 @@ class Orders(models.Model):
     queue = models.IntegerField()
     total_price = models.FloatField()
     payment_method_id = models.ForeignKey(
-        PaymentMethod, on_delete=models.RESTRICT, related_name='master')
+        PaymentMethod, on_delete=models.RESTRICT, related_name='orders')
     final_price = models.FloatField()
     order_date = models.DateTimeField()
-    coupont_code = models.ForeignKey(
-        Couponts, on_delete=models.RESTRICT, null=True, related_name='orders')
+    coupon_code = models.ForeignKey(
+        Coupons, on_delete=models.RESTRICT, null=True, related_name='orders')
     payment_code = models.CharField(max_length=20)
     payment = models.BooleanField()
 
@@ -66,9 +67,9 @@ class Orders(models.Model):
 class OrderMenus(models.Model):
     id = models.CharField(primary_key=True, max_length=100)
     session = models.ForeignKey(
-        Orders, on_delete=models.RESTRICT, related_name='order_transactions', db_column='session')
+        Orders, on_delete=models.RESTRICT, related_name='order_menus', db_column='session')
     menu_id = models.ForeignKey(
-        Menus, on_delete=models.RESTRICT, related_name='order_transactions', db_column='menu_id')
+        Menus, on_delete=models.RESTRICT, related_name='order_menus', db_column='menu_id')
     quantity = models.IntegerField()
 
     def __str__(self) -> str:
