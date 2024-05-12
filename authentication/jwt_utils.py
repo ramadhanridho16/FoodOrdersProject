@@ -18,7 +18,12 @@ If not rise the exception
 """
 
 
-def check_jwt_token(jwt_token):
+def check_jwt_token(headers):
+    jwt_token = None
+    
+    if "Authorization" in headers:
+        jwt_token = headers["Authorization"]
+
     if (jwt_token is None) or (jwt_token.startswith("Bearer ") is False):
         raise ResponseStatusError("Unauthorized", 401)
 

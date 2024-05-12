@@ -22,7 +22,6 @@ def login(request, *args, **kwargs):
 @api_view(["GET"])
 def check(request, *args, **kwargs):
     if request.method == "GET":
-        logger.info(request.headers["Authorization"])
-        payload = check_jwt_token(request.headers["Authorization"])
+        payload = check_jwt_token(request.headers)
         logger.info(f'Username: {payload["username"]} is access')
-        return generic_response(message="Success login", status_code=200)
+        return generic_response(message="Success get data", status_code=200, data=payload)
