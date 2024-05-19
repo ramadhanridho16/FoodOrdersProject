@@ -6,8 +6,8 @@ from master.models import PaymentMethod, Categories, Medias, Promos
 class Coupons(models.Model):
     code = models.CharField(max_length=100, primary_key=True, db_column='code')
     name = models.CharField(max_length=100)
-    end_date = models.DateField()
-    start_date = models.DateField()
+    end_date = models.BigIntegerField()
+    start_date = models.BigIntegerField()
     quantity = models.IntegerField()
     percentage = models.IntegerField()
     max_discount_price = models.FloatField()

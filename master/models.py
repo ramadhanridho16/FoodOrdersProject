@@ -48,8 +48,8 @@ class PaymentMethod(models.Model):
 class Promos(models.Model):
     id = models.CharField(primary_key=True, max_length=100)
     name = models.CharField(null=False, max_length=200)
-    start_date = models.DateField(null=False)
-    end_date = models.DateField(null=False)
+    start_date = models.BigIntegerField(null=False)
+    end_date = models.BigIntegerField(null=False)
 
     def __str__(self) -> str:
         return f'{self.id} => {self.name}'

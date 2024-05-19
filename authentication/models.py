@@ -12,7 +12,7 @@ class Users(models.Model):
     password = models.CharField(max_length=100, null=False)
     phone = models.CharField(max_length=20, null=True)
     gender = models.CharField(max_length=1, null=False, choices=PrefixChoices.choices)
-    birth_date = models.DateField(null=False)
+    birth_date = models.BigIntegerField(null=False)
     email = models.CharField(max_length=100, null=True, unique=True)
     activate = models.BooleanField(null=False, default=False)
 
@@ -26,7 +26,7 @@ class Users(models.Model):
 class UserVerifies(models.Model):
     id = models.AutoField(primary_key=True, db_column='id')
     token = models.CharField(max_length=100, null=False, unique=True)
-    expired_at = models.DateTimeField(null=False)
+    expired_at = models.BigIntegerField(null=False)
     username = models.OneToOneField(Users, on_delete=models.RESTRICT, null=False, db_column='username',
                                     related_name='user_verifies')
 
@@ -40,7 +40,7 @@ class UserVerifies(models.Model):
 class ForgetPasswords(models.Model):
     id = models.AutoField(primary_key=True, db_column='id')
     token = models.CharField(max_length=100, null=False, unique=True)
-    expired_at = models.DateTimeField(null=False)
+    expired_at = models.BigIntegerField(null=False)
     username = models.OneToOneField(Users, on_delete=models.RESTRICT, null=False, db_column='username',
                                     related_name='forget_passwords')
 
