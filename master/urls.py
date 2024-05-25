@@ -6,4 +6,5 @@ urlpatterns = [
     path('', views.index),
     path('async/<str:name>/', views.test_async),
     path('except/', views.test_exception),
+    path('images/', views.image_test),
 ]

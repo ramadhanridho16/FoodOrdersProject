@@ -5,10 +5,11 @@ import time
 from asgiref.sync import sync_to_async
 from django.conf import settings
 from django.http import JsonResponse
+from rest_framework import status
 from rest_framework.decorators import api_view
 
 from FoodOrdersProject.exception import ResponseStatusError
-from FoodOrdersProject.utils import generic_response, uuidv4
+from FoodOrdersProject.utils import generic_response, uuidv4, move_file
 from .models import Categories
 from .serializer import Test
 
@@ -16,6 +17,15 @@ from .serializer import Test
 
 logger = logging.getLogger(__name__)
 uuid = uuidv4
+
+
+@api_view(["POST"])
+def image_test(request, *args, **kwargs):
+    if request.method == "POST":
+        file = request.FILES["image"]
+        move_file(file, request.POST["destination"])
+        return generic_response(message=f"Oke, file : {file.content_type} {file.name} {type(file.size)}",
+                                status_code=status.HTTP_200_OK)
 
 
 @api_view(["GET"])
