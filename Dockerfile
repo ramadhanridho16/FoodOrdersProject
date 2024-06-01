@@ -15,7 +15,7 @@ RUN pip install -r requirements.txt
 
 COPY . .
 
-RUN mkdir -p /app/static/images/{menus,banners}
+RUN bash -c 'mkdir -p /app/static/images/{menus,banners}'
 
 ENV PYTHONBUFFERED=1
 ENV SECRET_KEY="rahasiagessecret"
