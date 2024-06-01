@@ -15,8 +15,6 @@ RUN pip install -r requirements.txt
 
 COPY . .
 
-RUN bash -c 'rm -r static'
-
 RUN bash -c 'mkdir -pv /app/static/images/{banners,menus}'
 
 ENV PYTHONBUFFERED=1
