@@ -1,0 +1,6 @@
+venv
+.idea
+.env
+**/__pycache__
+static/images/banners/**
+static/images/menus/**

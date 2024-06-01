@@ -1,6 +1,4 @@
-import asyncio
-import logging
-import time
+import asyncio, logging, time
 
 from asgiref.sync import sync_to_async
 from django.conf import settings
