@@ -11,11 +11,11 @@ RUN apt-get install libpq-dev -y gcc
 
 COPY requirements.txt requirements.txt
 
-RUN pip3 install -r requirements.txt
-
-RUN python --version
+RUN pip install -r requirements.txt
 
 COPY . .
+
+RUN mkdir -p /app/static/images/{menus,banners}
 
 ENV PYTHONBUFFERED=1
 ENV SECRET_KEY="rahasiagessecret"
