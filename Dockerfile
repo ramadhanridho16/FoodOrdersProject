@@ -15,8 +15,6 @@ RUN pip install -r requirements.txt
 
 COPY . .
 
-RUN bash -c 'mkdir -pv /app/static'
-
 ENV PYTHONBUFFERED=1
 ENV SECRET_KEY="rahasiagessecret"
 ENV DB_USERNAME="root"
