@@ -13,6 +13,8 @@ COPY requirements.txt requirements.txt
 
 RUN pip install -r requirements.txt
 
+RUN bash -c 'mkdir -pv /app/static/images/{banners,menus}'
+
 COPY . .
 
 ENV PYTHONBUFFERED=1
