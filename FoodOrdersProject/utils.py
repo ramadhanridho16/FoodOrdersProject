@@ -26,7 +26,7 @@ def generic_response(data=None, message=None, status_code=status.HTTP_200_OK):
             "status": status_code
         }
 
-    return Response(response, status_code, content_type="application/json")
+    return Response(response, status_code)
 
 
 def uuidv4():
