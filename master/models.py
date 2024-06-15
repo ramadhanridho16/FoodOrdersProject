@@ -45,19 +45,6 @@ class PaymentMethod(models.Model):
         db_table = '"food_orders"."payment_methods"'
 
 
-class Promos(models.Model):
-    id = models.CharField(primary_key=True, max_length=100)
-    name = models.CharField(null=False, max_length=200)
-    start_date = models.BigIntegerField(null=False)
-    end_date = models.BigIntegerField(null=False)
-
-    def __str__(self) -> str:
-        return f'{self.id} => {self.name}'
-
-    class Meta:
-        db_table = '"food_orders"."promos"'
-
-
 class HomeBanners(models.Model):
     id = models.CharField(primary_key=True, max_length=100)
     name = models.CharField(max_length=100, null=False, unique=True)

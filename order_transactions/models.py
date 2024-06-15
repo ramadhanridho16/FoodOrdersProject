@@ -1,6 +1,6 @@
 from django.db import models
 
-from master.models import PaymentMethod, Categories, Medias, Promos
+from master.models import PaymentMethod, Categories, Medias
 
 
 class Coupons(models.Model):
@@ -23,14 +23,27 @@ class Coupons(models.Model):
         db_table = '"food_orders"."coupons"'
 
 
+class Promos(models.Model):
+    id = models.CharField(primary_key=True, max_length=100)
+    name = models.CharField(null=False, max_length=200)
+    percentage = models.FloatField(null=False)
+    start_date = models.BigIntegerField(null=False)
+    end_date = models.BigIntegerField(null=False)
+
+    def __str__(self) -> str:
+        return f'{self.id} => {self.name}'
+
+    class Meta:
+        db_table = '"food_orders"."promos"'
+
+
 class Menus(models.Model):
     id = models.CharField(primary_key=True, max_length=100)
     name = models.CharField(max_length=255)
     category_id = models.ForeignKey(
         Categories, on_delete=models.RESTRICT, related_name='menus')
-    price = models.FloatField()
-    promo_price = models.FloatField()
-    promo = models.BooleanField()
+    description = models.TextField(null=False, default="-")
+    price = models.FloatField(null=False)
     promo_id = models.ForeignKey(
         Promos, on_delete=models.RESTRICT, related_name='menus')
     media_id = models.ForeignKey(
