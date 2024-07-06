@@ -1,4 +1,6 @@
-import asyncio, logging, time
+import asyncio
+import logging
+import time
 
 from asgiref.sync import sync_to_async
 from django.conf import settings
@@ -22,8 +24,10 @@ def image_test(request, *args, **kwargs):
     if request.method == "POST":
         file = request.FILES["image"]
         move_file(file, request.POST["destination"])
-        return generic_response(message=f"Oke, file : {file.content_type} {file.name} {type(file.size)}",
-                                status_code=status.HTTP_200_OK)
+        return generic_response(
+            message=f"Oke, file : {file.content_type} {file.name} {type(file.size)}",
+            status_code=status.HTTP_200_OK,
+        )
 
 
 @api_view(["GET"])
@@ -31,9 +35,7 @@ def index(request, *args, **kwargs):
     if request.method == "GET":
         print(kwargs)
         logger.info("Tetsing")
-        data = {
-            "name": ""
-        }
+        data = {"name": ""}
         test = Test(data=data)
         logger.info(test.is_valid(raise_exception=True))
         return generic_response(message="Oke", status_code=200, data=test.data)
