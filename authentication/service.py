@@ -11,8 +11,8 @@ from rest_framework import status
 
 from FoodOrdersProject import utils, static_message
 from FoodOrdersProject.exception import ResponseStatusError
-from authentication.models import Users, UserVerifies
 from authentication import jwt_utils
+from authentication.models import Users, UserVerifies
 
 logger = logging.getLogger(__name__)
 
@@ -53,14 +53,17 @@ async def register(req):
 def login(req):
     user = Users.objects.filter(Q(email=req["username_email"]) | Q(username=req["username_email"]))
     if not user.exists():
-        raise ResponseStatusError(message=static_message.LOGIN_ERROR, status=status.HTTP_400_BAD_REQUEST)
+        raise ResponseStatusError(message=static_message.LOGIN_ERROR, status=status.HTTP_401_UNAUTHORIZED)
 
     user = user.get()
 
     is_password_valid = bcrypt.checkpw(req["password"].encode("utf-8"), bytes(user.password, "utf-8"))
 
     if not is_password_valid:
-        raise ResponseStatusError(message=static_message.LOGIN_ERROR, status=status.HTTP_400_BAD_REQUEST)
+        raise ResponseStatusError(message=static_message.LOGIN_ERROR, status=status.HTTP_401_UNAUTHORIZED)
+
+    if not user.activate:
+        raise ResponseStatusError(message=static_message.NOT_VERIFY, status=status.HTTP_401_UNAUTHORIZED)
 
     return jwt_utils.generate_jwt_token(req["username_email"])
 

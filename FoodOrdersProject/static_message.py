@@ -13,6 +13,7 @@ BAD_REQUEST = "Bad request"
 LOGIN_SUCCESS = "Success login"
 LOGIN_ERROR = "Username/email or password is wrong"
 SUCCESS_GET_LIST = "Success get list {0} with length {1}"
+NOT_VERIFY = "Account not active, please verify your account first"
 
 # Email event
 REGISTER = "REGISTER"
