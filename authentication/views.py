@@ -2,7 +2,6 @@ import asyncio
 import json
 import logging
 import traceback
-from django.conf import settings
 
 from asgiref.sync import sync_to_async
 from django.http import JsonResponse
@@ -12,9 +11,9 @@ from rest_framework.decorators import api_view
 from FoodOrdersProject import static_message
 from FoodOrdersProject.utils import generic_response
 from . import service
-from .jwt_utils import generate_jwt_token, check_jwt_token
+from .jwt_utils import check_jwt_token
 from .models import Users, UserVerifies
-from .serializer import RegisterRequest
+from .serializer import RegisterRequest, LoginRequest
 
 # Create your views here.
 
@@ -71,6 +70,30 @@ async def registration(req, *args, **kwargs):
         )
 
 
+@api_view(["POST"])
+def login(req, *args, **kwargs):
+    if req.method == "POST":
+        request = LoginRequest(data=json.loads(req.body))
+        request.is_valid(raise_exception=True)
+        request = request.data
+
+        token = service.login(request)
+        response = {
+            "token": token
+        }
+        return generic_response(message=static_message.LOGIN_SUCCESS, status_code=200, data=response)
+
+
+@api_view(["GET"])
+def check(req, *args, **kwargs):
+    if req.method == "GET":
+        payload = check_jwt_token(req.headers)
+        logger.info(f'Username: {payload["username_email"]} is access')
+        return generic_response(
+            message="Success get data", status_code=200, data=payload
+        )
+
+
 @sync_to_async(thread_sensitive=False)
 def delete_user_and_user_verify(request):
     user_verify = UserVerifies.objects.select_related("user").filter(user__username=request["username"])
@@ -78,20 +101,3 @@ def delete_user_and_user_verify(request):
 
     user = Users.objects.filter(username=request["username"])
     user.delete()
-
-
-@api_view(["POST"])
-def login(request, *args, **kwargs):
-    if request.method == "POST":
-        data = {"token": generate_jwt_token(email="asgr397")}
-        return generic_response(message="Success login", status_code=200, data=data)
-
-
-@api_view(["GET"])
-def check(request, *args, **kwargs):
-    if request.method == "GET":
-        payload = check_jwt_token(request.headers)
-        logger.info(f'Username: {payload["username"]} is access')
-        return generic_response(
-            message="Success get data", status_code=200, data=payload
-        )

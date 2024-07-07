@@ -137,8 +137,8 @@ def sending_email(to, data, token, event):
 
 # Convert the expired date to epoch milis and convert it to UTC timezone
 def convert_datetime_to_epoch(date):
-    expire_milis = date.astimezone(timezone.utc)
-    # Get epoch milis by substract with the start of epoch milis date
-    expire_milis = expire_milis - datetime(1970, 1, 1, tzinfo=timezone.utc)
+    millis = date.astimezone(timezone.utc)
+    # Get epoch millis by subtract with the start of epoch milis date
+    millis = millis - datetime(1970, 1, 1, tzinfo=timezone.utc)
     # Multiply the total second with a thousand
-    return round(expire_milis.total_seconds() * 1000)
+    return round(millis.total_seconds() * 1000)

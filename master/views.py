@@ -8,23 +8,35 @@ from django.http import JsonResponse
 from rest_framework import status
 from rest_framework.decorators import api_view
 
+from FoodOrdersProject import utils, static_message
 from FoodOrdersProject.exception import ResponseStatusError
-from FoodOrdersProject.utils import generic_response, uuidv4, move_file
-from .models import Categories
+from FoodOrdersProject.utils import generic_response
+from authentication import jwt_utils
+from master import service
+from master.models import Categories
 from .serializer import Test
 
 # Create your views here.
 
 logger = logging.getLogger(__name__)
-uuid = uuidv4
+uuid = utils.uuidv4
+
+
+@api_view(["GET"])
+def categories(req, *args, **kwargs):
+    jwt_utils.check_jwt_token(req.headers)
+
+    response = service.get_all_category()
+    return generic_response(response, static_message.SUCCESS_GET_LIST.format("category", response["total_data"]),
+                            status.HTTP_200_OK)
 
 
 @api_view(["POST"])
 def image_test(request, *args, **kwargs):
     if request.method == "POST":
         file = request.FILES["image"]
-        move_file(file, request.POST["destination"])
-        return generic_response(
+        utils.move_file(file, request.POST["destination"])
+        return utils.generic_response(
             message=f"Oke, file : {file.content_type} {file.name} {type(file.size)}",
             status_code=status.HTTP_200_OK,
         )
@@ -38,7 +50,7 @@ def index(request, *args, **kwargs):
         data = {"name": ""}
         test = Test(data=data)
         logger.info(test.is_valid(raise_exception=True))
-        return generic_response(message="Oke", status_code=200, data=test.data)
+        return utils.generic_response(message="Oke", status_code=200, data=test.data)
 
 
 @api_view(["GET"])

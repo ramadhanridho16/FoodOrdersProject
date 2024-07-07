@@ -1,5 +1,6 @@
 import datetime
 import logging
+import traceback
 from datetime import datetime, timezone, timedelta
 
 import jwt
@@ -20,7 +21,7 @@ If not rise the exception
 
 def check_jwt_token(headers):
     jwt_token = None
-    
+
     if "Authorization" in headers:
         jwt_token = headers["Authorization"]
 
@@ -32,8 +33,9 @@ def check_jwt_token(headers):
 
     try:
         payload = jwt.decode(jwt_token, secret_key, algorithms=["HS256"])
-    except Exception:
-        raise ResponseStatusError("Unauthorized", 401)
+    except Exception as exc:
+        traceback.print_exc()
+        raise ResponseStatusError(str(exc), 401)
 
     return payload
 
@@ -44,13 +46,13 @@ If success return string of token
 """
 
 
-def generate_jwt_token(email=None, username=None):
-    logger.info(datetime.now(timezone.utc))
+def generate_jwt_token(username_email):
+    now = datetime.now(timezone.utc)
+    logger.info(now)
     payload = {
-        "email": email if email is not None else None,
-        "username": username if username else None,
-        "exp": datetime.now(timezone.utc) + timedelta(hours=2),
-        "iat": datetime.now(timezone.utc),
+        "username_email": username_email,
+        "exp": now + timedelta(hours=2),
+        "iat": now,
         "issuer_by": "Food orders system",
     }
 

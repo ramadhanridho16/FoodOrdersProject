@@ -11,3 +11,8 @@ class RegisterRequest(serializers.Serializer):
     confirmation_password = serializers.CharField(allow_blank=False, max_length=100)
     gender = serializers.CharField(allow_blank=False, max_length=1)
     birth_date = serializers.CharField(allow_blank=False)
+
+
+class LoginRequest(serializers.Serializer):
+    username_email = serializers.CharField(allow_blank=False, max_length=100)
+    password = serializers.CharField(allow_blank=False, max_length=100)

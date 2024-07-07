@@ -10,6 +10,9 @@ PASSWORD_NOT_SAME = "Password and confirmation password is not same"
 WRONG_GENDER = "Wrong gender"
 PATH_NOT_FOUND = "Path {0} not found"
 BAD_REQUEST = "Bad request"
+LOGIN_SUCCESS = "Success login"
+LOGIN_ERROR = "Username/email or password is wrong"
+SUCCESS_GET_LIST = "Success get list {0} with length {1}"
 
 # Email event
 REGISTER = "REGISTER"
