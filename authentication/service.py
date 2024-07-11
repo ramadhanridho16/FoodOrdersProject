@@ -6,6 +6,7 @@ from datetime import timedelta, datetime
 
 import bcrypt
 from asgiref.sync import sync_to_async
+from django.db import transaction
 from django.db.models import Q
 from rest_framework import status
 
@@ -34,7 +35,7 @@ async def register(req):
             req["email"],
             {
                 "name": req["name"],
-                "expired_date": expired_date.strftime("%H:%M:%S %d-%m-%Y"),
+                "expired_date": expired_date.strftime("jam %H:%M:%S, tanggal %d-%m-%Y"),
             },
             token,
             static_message.REGISTER,
@@ -66,6 +67,27 @@ def login(req):
         raise ResponseStatusError(message=static_message.NOT_VERIFY, status=status.HTTP_401_UNAUTHORIZED)
 
     return jwt_utils.generate_jwt_token(req["username_email"])
+
+
+async def resend_verification(req):
+    expired_date = datetime.now() + timedelta(hours=2)
+
+    req["expired_date"] = utils.convert_datetime_to_epoch(expired_date)
+
+    [token, user] = await asyncio.create_task(save_resend_verification(req))
+
+    # After save, call this function to run send email asynchronously
+    asyncio.create_task(
+        utils.sending_email(
+            req["email"],
+            {
+                "name": user.name,
+                "expired_date": expired_date.strftime("jam %H:%M:%S, tanggal %d-%m-%Y"),
+            },
+            token,
+            static_message.RESEND_VERIFY,
+        )
+    )
 
 
 @sync_to_async(thread_sensitive=False)
@@ -112,9 +134,52 @@ def save_register(req):
     return [user_verify.token, user]
 
 
+@sync_to_async(thread_sensitive=False)
+def save_resend_verification(req):
+    user = Users.objects.filter(email=req["email"])
+
+    if not user.exists():
+        raise ResponseStatusError(message=static_message.EMAIL_NOT_EXIST, status=status.HTTP_400_BAD_REQUEST)
+
+    user = user.get()
+
+    if user.activate:
+        raise ResponseStatusError(message=static_message.ACCOUNT_ALREADY_ACTIVATE, status=status.HTTP_400_BAD_REQUEST)
+
+    user_verify = user.user_verifies
+    user_verify.token = uuid()
+    user_verify.expired_at = req["expired_date"]
+    user_verify.save()
+
+    # Return the token
+    return [user_verify.token, user]
+
+
 def check_confirmation_password(password, confirmation_password):
     if password != confirmation_password:
         raise ResponseStatusError(
             static_message.PASSWORD_NOT_SAME,
             status=status.HTTP_400_BAD_REQUEST,
         )
+
+
+def verify(token):
+    with transaction.atomic():
+        user_verify = UserVerifies.objects.filter(token=token)
+        if not user_verify.exists():
+            raise ResponseStatusError(message=static_message.NOT_VERIFY, status=status.HTTP_400_BAD_REQUEST)
+        user_verify = user_verify.get()
+
+        user = user_verify.user
+
+        if user.activate:
+            raise ResponseStatusError(message=static_message.ACCOUNT_ALREADY_ACTIVATE,
+                                      status=status.HTTP_400_BAD_REQUEST)
+
+        expired_date = datetime.fromtimestamp(user_verify.expired_at / 1000)
+
+        if datetime.now() > expired_date:
+            raise ResponseStatusError(message=static_message.EXPIRED_VERIFICATION_TOKEN,
+                                      status=status.HTTP_400_BAD_REQUEST)
+        user.activate = True
+        user.save()

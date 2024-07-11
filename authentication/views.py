@@ -9,11 +9,12 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 
 from FoodOrdersProject import static_message
+from FoodOrdersProject.exception import ResponseStatusError
 from FoodOrdersProject.utils import generic_response
-from . import service
-from .jwt_utils import check_jwt_token
-from .models import Users, UserVerifies
-from .serializer import RegisterRequest, LoginRequest
+from authentication import service
+from authentication.jwt_utils import check_jwt_token
+from authentication.models import Users, UserVerifies
+from authentication.serializer import RegisterRequest, LoginRequest, ResendEmailVerificationRequest
 
 # Create your views here.
 
@@ -51,7 +52,7 @@ async def registration(req, *args, **kwargs):
             data = await service.register(request)
         except Exception as exc:
             if exc.__class__.__name__ == "ResponseStatusError":
-                logger.warn(
+                logger.warning(
                     f"Handling ResponseStatusError with message : {exc.message} and status : {exc.status}"
                 )
                 response = {"message": exc.message}
@@ -70,6 +71,59 @@ async def registration(req, *args, **kwargs):
         )
 
 
+async def resend_verification(req, *args, **kwargs):
+    if req.method == "POST":
+
+        request = ResendEmailVerificationRequest(data=json.loads(req.body))
+
+        try:
+            request.is_valid(raise_exception=True)
+            request = request.data
+        except Exception as exc:
+            if exc.__class__.__name__ == "ValidationError":
+                data = {}
+
+                error_dict = list(list(exc.__dict__.values()))[0]
+                for i in error_dict:
+                    data[i] = error_dict[i][0].title()
+
+                response = {"message": static_message.BAD_REQUEST, "data": data}
+
+                return JsonResponse(data=response, status=status.HTTP_400_BAD_REQUEST)
+
+            response = {"message": static_message.SERVER_ERROR}
+            traceback.print_exc()
+            return JsonResponse(
+                data=response, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+        try:
+            await service.resend_verification(request)
+        except Exception as exc:
+            if exc.__class__.__name__ == "ResponseStatusError":
+                logger.warning(
+                    f"Handling ResponseStatusError with message : {exc.message} and status : {exc.status}"
+                )
+                response = {"message": exc.message}
+                return JsonResponse(data=response, status=exc.status)
+
+            response = {"message": static_message.SERVER_ERROR}
+            traceback.print_exc()
+            return JsonResponse(
+                data=response, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+        return JsonResponse(
+            data={
+                "messages": static_message.SUCCESS_RESEND_VERIFICATION
+            }, status=status.HTTP_200_OK
+        )
+    else:
+        return JsonResponse(
+            data={"message": "Method {} not allowed".format(req.method)}, status=status.HTTP_405_METHOD_NOT_ALLOWED
+        )
+
+
 @api_view(["POST"])
 def login(req, *args, **kwargs):
     if req.method == "POST":
@@ -82,6 +136,18 @@ def login(req, *args, **kwargs):
             "token": token
         }
         return generic_response(message=static_message.LOGIN_SUCCESS, status_code=200, data=response)
+
+
+@api_view(["PATCH"])
+def verify(req, *args, **kwargs):
+    if req.method == "PATCH":
+        if "token" not in req.query_params.keys():
+            raise ResponseStatusError(message=static_message.NOT_VALID_VERIFICATION_TOKEN,
+                                      status=status.HTTP_400_BAD_REQUEST)
+
+        service.verify(req.query_params["token"])
+
+        return generic_response(message=static_message.VERIFY_ACCOUNT_SUCCESS, status_code=status.HTTP_200_OK)
 
 
 @api_view(["GET"])

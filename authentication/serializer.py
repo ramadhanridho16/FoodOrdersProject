@@ -16,3 +16,7 @@ class RegisterRequest(serializers.Serializer):
 class LoginRequest(serializers.Serializer):
     username_email = serializers.CharField(allow_blank=False, max_length=100)
     password = serializers.CharField(allow_blank=False, max_length=100)
+
+
+class ResendEmailVerificationRequest(serializers.Serializer):
+    email = serializers.EmailField(allow_blank=False, max_length=100)

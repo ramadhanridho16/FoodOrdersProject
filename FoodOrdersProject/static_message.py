@@ -14,6 +14,12 @@ LOGIN_SUCCESS = "Success login"
 LOGIN_ERROR = "Username/email or password is wrong"
 SUCCESS_GET_LIST = "Success get list {0} with length {1}"
 NOT_VERIFY = "Account not active, please verify your account first"
+SUCCESS_RESEND_VERIFICATION = "Success resend verification, please check your email"
+EMAIL_NOT_EXIST = "Email is not register yet"
+ACCOUNT_ALREADY_ACTIVATE = "Account is already activate"
+NOT_VALID_VERIFICATION_TOKEN = "Token is not valid"
+EXPIRED_VERIFICATION_TOKEN = "Token is expired"
+VERIFY_ACCOUNT_SUCCESS = "Success verify your account, please login"
 
 # Email event
 REGISTER = "REGISTER"
@@ -21,5 +27,5 @@ RESEND_VERIFY = "RESEND_VERIFY"
 FORGET_PASSWORD = "FORGET_PASSWORD"
 
 # Email
-SUBJECT = "Pinara Account Verification"
+SUBJECT_VERIFICATION = "Pinara Account Verification"
 BODY = "Halo {0}, silakan klik tombol di bawah untuk melakukan verifikasi akun sebelum {1}."

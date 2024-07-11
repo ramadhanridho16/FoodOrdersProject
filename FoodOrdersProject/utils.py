@@ -113,12 +113,12 @@ def sending_email(to, data, token, event):
         logger.info(f"Start sending email to {to}")
         context = {
             "subjectMessage": "Register",
-            "link_destination": f"http://www.{token}.com",
+            "link_destination": "http://www.{}.com".format(token),
             "message": static_message.BODY.format(data["name"], data["expired_date"]),
             "button": "Verify",
             "year": datetime.now().strftime("%Y"),
         }
-        subject = static_message.SUBJECT
+        subject = static_message.SUBJECT_VERIFICATION
         html_message = render_to_string("email_example.html", context)
         plain_message = strip_tags(html_message)
         send_mail(
@@ -132,7 +132,25 @@ def sending_email(to, data, token, event):
     elif event == static_message.FORGET_PASSWORD:
         pass
     elif event == static_message.RESEND_VERIFY:
-        pass
+        logger.info(f"Start sending email to {to}")
+        context = {
+            "subjectMessage": "Email Verification",
+            "link_destination": "http://www.{}.com".format(token),
+            "message": static_message.BODY.format(data["name"], data["expired_date"]),
+            "button": "Verify",
+            "year": datetime.now().strftime("%Y"),
+        }
+        subject = static_message.SUBJECT_VERIFICATION
+        html_message = render_to_string("email_example.html", context)
+        plain_message = strip_tags(html_message)
+        send_mail(
+            subject,
+            plain_message,
+            settings.EMAIL_HOST_USER,
+            [to],
+            html_message=html_message,
+        )
+        logger.info(f"Done sending email to {to}")
 
 
 # Convert the expired date to epoch milis and convert it to UTC timezone
