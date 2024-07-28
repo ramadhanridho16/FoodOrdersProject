@@ -136,7 +136,8 @@ def save_register(req):
 
 @sync_to_async(thread_sensitive=False)
 def save_resend_verification(req):
-    user = Users.objects.filter(email=req["email"])
+    # user = Users.objects.filter(email=req["email"])
+    user = Users.objects.select_related("user_verifies").filter(email=req["email"])
 
     if not user.exists():
         raise ResponseStatusError(message=static_message.EMAIL_NOT_EXIST, status=status.HTTP_400_BAD_REQUEST)
@@ -165,9 +166,9 @@ def check_confirmation_password(password, confirmation_password):
 
 def verify(token):
     with transaction.atomic():
-        user_verify = UserVerifies.objects.filter(token=token)
+        user_verify = UserVerifies.objects.select_related("user").filter(token=token)
         if not user_verify.exists():
-            raise ResponseStatusError(message=static_message.NOT_VERIFY, status=status.HTTP_400_BAD_REQUEST)
+            raise ResponseStatusError(message=static_message.NOT_VALID_VERIFICATION_TOKEN, status=status.HTTP_400_BAD_REQUEST)
         user_verify = user_verify.get()
 
         user = user_verify.user
