@@ -1,7 +1,6 @@
 import asyncio
 import json
 import logging
-import traceback
 
 from asgiref.sync import sync_to_async
 from django.http import JsonResponse
@@ -10,11 +9,12 @@ from rest_framework.decorators import api_view
 
 from FoodOrdersProject import static_message
 from FoodOrdersProject.exception import ResponseStatusError
+from FoodOrdersProject.exception_handler import async_custom_exception_handler, async_server_error_handler
 from FoodOrdersProject.utils import generic_response
 from authentication import service
 from authentication.jwt_utils import check_jwt_token
 from authentication.models import Users, UserVerifies
-from authentication.serializer import RegisterRequest, LoginRequest, ResendEmailVerificationRequest
+from authentication.serializer import RegisterRequest, LoginRequest, ResendEmailRequest, ChangePasswordRequest
 
 # Create your views here.
 
@@ -24,46 +24,37 @@ logger = logging.getLogger(__name__)
 # Registration method
 async def registration(req, *args, **kwargs):
     if req.method == "POST":
-
+        data = None
         request = RegisterRequest(data=json.loads(req.body))
 
         try:
             request.is_valid(raise_exception=True)
             request = request.data
         except Exception as exc:
-            if exc.__class__.__name__ == "ValidationError":
-                data = {}
+            error_response = await async_custom_exception_handler(exc)
 
-                error_dict = list(list(exc.__dict__.values()))[0]
-                for i in error_dict:
-                    data[i] = error_dict[i][0].title()
+            if error_response:
+                return error_response
 
-                response = {"message": static_message.BAD_REQUEST, "data": data}
+            error_response = await async_server_error_handler()
 
-                return JsonResponse(data=response, status=status.HTTP_400_BAD_REQUEST)
-
-            response = {"message": static_message.SERVER_ERROR}
-            traceback.print_exc()
-            return JsonResponse(
-                data=response, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            if error_response:
+                return error_response
 
         try:
             data = await service.register(request)
         except Exception as exc:
-            if exc.__class__.__name__ == "ResponseStatusError":
-                logger.warning(
-                    f"Handling ResponseStatusError with message : {exc.message} and status : {exc.status}"
-                )
-                response = {"message": exc.message}
-                return JsonResponse(data=response, status=exc.status)
+            error_response = await async_custom_exception_handler(exc)
+
+            if error_response:
+                return error_response
 
             await asyncio.create_task(delete_user_and_user_verify(request))
-            response = {"message": static_message.SERVER_ERROR}
-            traceback.print_exc()
-            return JsonResponse(
-                data=response, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+
+            error_response = await async_server_error_handler()
+
+            if error_response:
+                return error_response
 
         return JsonResponse(
             status=201,
@@ -73,49 +64,80 @@ async def registration(req, *args, **kwargs):
 
 async def resend_verification(req, *args, **kwargs):
     if req.method == "POST":
-
-        request = ResendEmailVerificationRequest(data=json.loads(req.body))
+        request = ResendEmailRequest(data=json.loads(req.body))
 
         try:
             request.is_valid(raise_exception=True)
             request = request.data
         except Exception as exc:
-            if exc.__class__.__name__ == "ValidationError":
-                data = {}
+            error_response = await async_custom_exception_handler(exc)
 
-                error_dict = list(list(exc.__dict__.values()))[0]
-                for i in error_dict:
-                    data[i] = error_dict[i][0].title()
+            if error_response:
+                return error_response
 
-                response = {"message": static_message.BAD_REQUEST, "data": data}
+            error_response = await async_server_error_handler()
 
-                return JsonResponse(data=response, status=status.HTTP_400_BAD_REQUEST)
-
-            response = {"message": static_message.SERVER_ERROR}
-            traceback.print_exc()
-            return JsonResponse(
-                data=response, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            if error_response:
+                return error_response
 
         try:
             await service.resend_verification(request)
         except Exception as exc:
-            if exc.__class__.__name__ == "ResponseStatusError":
-                logger.warning(
-                    f"Handling ResponseStatusError with message : {exc.message} and status : {exc.status}"
-                )
-                response = {"message": exc.message}
-                return JsonResponse(data=response, status=exc.status)
+            error_response = await async_custom_exception_handler(exc)
 
-            response = {"message": static_message.SERVER_ERROR}
-            traceback.print_exc()
-            return JsonResponse(
-                data=response, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            if error_response:
+                return error_response
+
+            error_response = await async_server_error_handler()
+
+            if error_response:
+                return error_response
 
         return JsonResponse(
             data={
                 "messages": static_message.SUCCESS_RESEND_VERIFICATION
+            }, status=status.HTTP_200_OK
+        )
+    else:
+        return JsonResponse(
+            data={"message": "Method {} not allowed".format(req.method)}, status=status.HTTP_405_METHOD_NOT_ALLOWED
+        )
+
+
+async def send_forget_password(req, *args, **kwargs):
+    if req.method == "POST":
+        request = ResendEmailRequest(data=json.loads(req.body))
+
+        try:
+            request.is_valid(raise_exception=True)
+            request = request.data
+        except Exception as exc:
+            error_response = await async_custom_exception_handler(exc)
+
+            if error_response:
+                return error_response
+
+            error_response = await async_server_error_handler()
+
+            if error_response:
+                return error_response
+
+        try:
+            await service.send_forget_password(request)
+        except Exception as exc:
+            error_response = await async_custom_exception_handler(exc)
+
+            if error_response:
+                return error_response
+
+            error_response = await async_server_error_handler()
+
+            if error_response:
+                return error_response
+
+        return JsonResponse(
+            data={
+                "messages": static_message.SUCCESS_SEND_FORGET_PASSWORD
             }, status=status.HTTP_200_OK
         )
     else:
@@ -142,12 +164,28 @@ def login(req, *args, **kwargs):
 def verify(req, *args, **kwargs):
     if req.method == "PATCH":
         if "token" not in req.query_params.keys():
-            raise ResponseStatusError(message=static_message.NOT_VALID_VERIFICATION_TOKEN,
+            raise ResponseStatusError(message=static_message.NOT_VALID_TOKEN,
                                       status=status.HTTP_400_BAD_REQUEST)
 
         service.verify(req.query_params["token"])
 
         return generic_response(message=static_message.VERIFY_ACCOUNT_SUCCESS, status_code=status.HTTP_200_OK)
+
+
+@api_view(["PATCH"])
+def change_password(req, *args, **kwargs):
+    if req.method == "PATCH":
+        if "token" not in req.query_params.keys():
+            raise ResponseStatusError(message=static_message.NOT_VALID_TOKEN,
+                                      status=status.HTTP_400_BAD_REQUEST)
+
+        request = ChangePasswordRequest(data=json.loads(req.body))
+        request.is_valid(raise_exception=True)
+        request = request.data
+
+        service.change_password(request, req.query_params["token"])
+
+        return generic_response(message=static_message.CHANGE_PASSWORD_SUCCESS, status_code=status.HTTP_200_OK)
 
 
 @api_view(["GET"])

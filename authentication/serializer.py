@@ -18,5 +18,10 @@ class LoginRequest(serializers.Serializer):
     password = serializers.CharField(allow_blank=False, max_length=100)
 
 
-class ResendEmailVerificationRequest(serializers.Serializer):
+class ResendEmailRequest(serializers.Serializer):
     email = serializers.EmailField(allow_blank=False, max_length=100)
+
+
+class ChangePasswordRequest(serializers.Serializer):
+    password = serializers.CharField(allow_blank=False, max_length=100)
+    confirmation_password = serializers.CharField(allow_blank=False, max_length=100)

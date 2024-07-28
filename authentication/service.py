@@ -13,7 +13,7 @@ from rest_framework import status
 from FoodOrdersProject import utils, static_message
 from FoodOrdersProject.exception import ResponseStatusError
 from authentication import jwt_utils
-from authentication.models import Users, UserVerifies
+from authentication.models import Users, UserVerifies, ForgetPasswords
 
 logger = logging.getLogger(__name__)
 
@@ -90,6 +90,27 @@ async def resend_verification(req):
     )
 
 
+async def send_forget_password(req):
+    expired_date = datetime.now() + timedelta(hours=2)
+
+    req["expired_date"] = utils.convert_datetime_to_epoch(expired_date)
+
+    [token, user] = await asyncio.create_task(save_forget_password(req))
+
+    # After save, call this function to run send email asynchronously
+    asyncio.create_task(
+        utils.sending_email(
+            req["email"],
+            {
+                "name": user.name,
+                "expired_date": expired_date.strftime("jam %H:%M:%S, tanggal %d-%m-%Y"),
+            },
+            token,
+            static_message.FORGET_PASSWORD,
+        )
+    )
+
+
 @sync_to_async(thread_sensitive=False)
 def save_register(req):
     # Check the password is same or not
@@ -156,6 +177,31 @@ def save_resend_verification(req):
     return [user_verify.token, user]
 
 
+@sync_to_async(thread_sensitive=False)
+def save_forget_password(req):
+    user = Users.objects.select_related("forget_passwords").filter(email=req["email"])
+
+    if not user.exists():
+        raise ResponseStatusError(message=static_message.EMAIL_NOT_EXIST, status=status.HTTP_400_BAD_REQUEST)
+
+    user = user.get()
+
+    forget_password = None
+
+    try:
+        forget_password = user.forget_passwords
+    except Exception as exc:
+        if exc.__class__.__name__ == "RelatedObjectDoesNotExist":
+            forget_password = ForgetPasswords(user=user)
+
+    forget_password.token = uuid()
+    forget_password.expired_at = req["expired_date"]
+    forget_password.save()
+
+    # Return the token
+    return [forget_password.token, user]
+
+
 def check_confirmation_password(password, confirmation_password):
     if password != confirmation_password:
         raise ResponseStatusError(
@@ -168,7 +214,8 @@ def verify(token):
     with transaction.atomic():
         user_verify = UserVerifies.objects.select_related("user").filter(token=token)
         if not user_verify.exists():
-            raise ResponseStatusError(message=static_message.NOT_VALID_VERIFICATION_TOKEN, status=status.HTTP_400_BAD_REQUEST)
+            raise ResponseStatusError(message=static_message.NOT_VALID_TOKEN,
+                                      status=status.HTTP_400_BAD_REQUEST)
         user_verify = user_verify.get()
 
         user = user_verify.user
@@ -183,4 +230,23 @@ def verify(token):
             raise ResponseStatusError(message=static_message.EXPIRED_VERIFICATION_TOKEN,
                                       status=status.HTTP_400_BAD_REQUEST)
         user.activate = True
+        user.save()
+
+
+def change_password(req, token):
+    with transaction.atomic():
+        check_confirmation_password(req["password"], req["confirmation_password"])
+
+        forget_password = ForgetPasswords.objects.select_related("user").filter(token=token)
+        if not forget_password.exists():
+            raise ResponseStatusError(message=static_message.NOT_VALID_TOKEN,
+                                      status=status.HTTP_400_BAD_REQUEST)
+
+        forget_password = forget_password.get()
+
+        user = forget_password.user
+
+        password = bcrypt.hashpw(req["password"].encode("utf-8"), bcrypt.gensalt())
+
+        user.password = password.decode()
         user.save()
