@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import time
+import json
 
 from asgiref.sync import sync_to_async
 from django.conf import settings
@@ -14,7 +15,7 @@ from FoodOrdersProject.utils import generic_response
 from authentication import jwt_utils
 from master import service
 from master.models import Categories
-from .serializer import Test
+from .serializer import Test, CategoryRequest
 
 # Create your views here.
 
@@ -22,13 +23,25 @@ logger = logging.getLogger(__name__)
 uuid = utils.uuidv4
 
 
-@api_view(["GET"])
+@api_view(["GET", "POST"])
 def categories(req, *args, **kwargs):
+    # tambahkan fungsi baru, tujuan untuk mengecek token ==
     jwt_utils.check_jwt_token(req.headers)
+    if req.method == "GET":
 
-    response = service.get_all_category()
-    return generic_response(response, static_message.SUCCESS_GET_LIST.format("category", response["total_data"]),
-                            status.HTTP_200_OK)
+        response = service.get_all_category()
+        return generic_response(response, static_message.SUCCESS_GET_LIST.format("category", response["total_data"]),
+                                status.HTTP_200_OK)
+    elif req.method == "POST":
+        # convert string from req.body(get request.body from client) to object
+        request = CategoryRequest(data=json.loads(req.body))
+        # bagian ini memvalidasi body yg didapatkan
+        request.is_valid(raise_exception=True)
+        request = request.data  # ngambil data yg telah valid
+
+        response = service.add_category(request["name"])
+
+        return generic_response(message=static_message.SUCCESS_CATEGORY, status_code=200, data=response)
 
 
 @api_view(["POST"])
