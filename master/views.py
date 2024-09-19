@@ -6,8 +6,10 @@ import json
 from asgiref.sync import sync_to_async
 from django.conf import settings
 from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import api_view
+from rest_framework.generics import RetrieveAPIView
 
 from FoodOrdersProject import utils, static_message
 from FoodOrdersProject.exception import ResponseStatusError
@@ -15,7 +17,7 @@ from FoodOrdersProject.utils import generic_response
 from authentication import jwt_utils
 from master import service
 from master.models import Categories
-from .serializer import Test, CategoryRequest
+from master.serializer import Test, CategoryRequest, CategorySerializer
 
 # Create your views here.
 
@@ -64,6 +66,20 @@ def index(request, *args, **kwargs):
         test = Test(data=data)
         logger.info(test.is_valid(raise_exception=True))
         return utils.generic_response(message="Oke", status_code=200, data=test.data)
+
+
+@api_view(["GET"])
+def CategoryDetailView(request, id):
+    categories = get_object_or_404(Categories, id=id)
+    
+    # Serialize the category data
+    serializer = CategorySerializer(categories)
+
+    # Return the serialized data as a JSON response
+    return JsonResponse({
+        'status' : 'success',
+        'data' : serializer.data
+    })
 
 
 @api_view(["GET"])

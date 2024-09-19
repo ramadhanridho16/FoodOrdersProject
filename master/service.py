@@ -3,6 +3,7 @@ import logging
 
 from FoodOrdersProject import utils
 from master.models import Categories
+from django.shortcuts import get_object_or_404
 
 uuid = utils.uuidv4
 logger = logging.getLogger(__name__)
@@ -26,3 +27,7 @@ def add_category(name):
         "id": category.id,
         'name': category.name
     }
+
+# def sort_category(name_id):
+#     category = get_object_or_404(Categories, id=name_id)
+#     food_drinks = category.
