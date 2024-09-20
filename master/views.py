@@ -69,17 +69,18 @@ def index(request, *args, **kwargs):
 
 
 @api_view(["GET"])
-def CategoryDetailView(request, id):
-    categories = get_object_or_404(Categories, id=id)
+def category_detail_view(request, id):
+    if request.method == "GET":
+        categories = get_object_or_404(Categories, id=id)
     
-    # Serialize the category data
-    serializer = CategorySerializer(categories)
+        # Serialize the category data
+        serializer = CategorySerializer(categories)
 
-    # Return the serialized data as a JSON response
-    return JsonResponse({
-        'status' : 'success',
-        'data' : serializer.data
-    })
+        # Return the serialized data as a JSON response
+        return JsonResponse({
+            'status' : 'success',
+            'data' : serializer.data
+        }, status=200)
 
 
 @api_view(["GET"])
