@@ -1,10 +1,11 @@
 import asyncio
+import json
 import logging
 import time
-import json
 
 from asgiref.sync import sync_to_async
 from django.conf import settings
+from django.core import serializers
 from django.http import JsonResponse
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -42,6 +43,15 @@ def categories(req, *args, **kwargs):
         response = service.add_category(request["name"])
 
         return generic_response(message=static_message.SUCCESS_CATEGORY, status_code=200, data=response)
+
+
+@api_view(["GET"])
+def category_by_id(req, id):
+    jwt_utils.check_jwt_token(req.headers)
+    if req.method == "GET":
+        response = service.get_category_by_id(id)
+        logger.info(f'Response is {response}')
+        return generic_response(response, static_message.SUCCESS_GET_DETAIL.format("category"), status.HTTP_200_OK)
 
 
 @api_view(["POST"])

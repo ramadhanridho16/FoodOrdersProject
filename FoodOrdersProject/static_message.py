@@ -23,6 +23,8 @@ EXPIRED_VERIFICATION_TOKEN = "Token is expired"
 VERIFY_ACCOUNT_SUCCESS = "Success verify your account, please login"
 CHANGE_PASSWORD_SUCCESS = "Success change password, please login"
 SUCCESS_CATEGORY = "Success add category"
+SUCCESS_GET_DETAIL = "Success get {0}"
+NOT_FOUND_GET_DETAIL = "{0} not found"
 
 # Email event
 REGISTER = "REGISTER"

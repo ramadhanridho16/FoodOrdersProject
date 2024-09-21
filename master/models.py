@@ -5,6 +5,12 @@ class Categories(models.Model):
     id = models.CharField(primary_key=True, max_length=100)
     name = models.CharField(null=False, max_length=100)
 
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+        }
+
     def __str__(self) -> str:
         return f'{self.id} => {self.name}'
 
